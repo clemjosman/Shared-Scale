@@ -1,0 +1,41 @@
+.projets-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.projets-title {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.projets-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.projet-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 150px;
+  background-color: #e8e8e8;
+  border-radius: 10px;
+  margin: 10px;
+  font-size: 24px;
+}
+
+.projets-list .projet-box:hover {
+  background-color: #eee;
+}
+
+.projets-list .projet-box:active {
+  background-color: #ccc;
+}
+
+.projet-box:hover {
+  cursor: pointer;
+  border: 0.5px solid #333;
+}
