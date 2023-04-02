@@ -8,10 +8,24 @@ const Projet = () => {
   const [actucommentaires, setActuCommentaires] = useState([]);
   const { projet } = useParams();
   const projetname = projet.toLowerCase().replace(/\s+/g, "");
+
   useEffect(() => {
     fetch(`/projets/${projetname}`)
       .then((response) => response.json())
       .then((data) => setId(data.id))
+      .catch((error) => console.error(error));
+  }, [projetname]);
+
+  useEffect(() => {
+    fetch(`http://localhost:6969/api/commentaires/projet/${projetname}`, {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        console.log("data comment", data[0].commentaire);
+        setActuCommentaires(data[0].commentaire);
+      })
       .catch((error) => console.error(error));
   }, [projetname]);
 
@@ -40,6 +54,7 @@ const Projet = () => {
   );
   const [commentaire, setCommentaire] = useState("");
   const [selectedNoteIndex, setSelectedNoteIndex] = useState(null);
+
   // connexion à l'instance de socket.io sur le serveur
   //   const socket = io("http://localhost:6969");
 
@@ -60,10 +75,11 @@ const Projet = () => {
 
   const handleCommentaireChange = (event) => {
     setCommentaire(event.target.value);
+    setActuCommentaires(event.target.value);
     console.log("commentaire", event.target.value);
     const body = {
       projet: projetname,
-      notes: 0,
+      notes: selectedNoteIndex,
       commentaire: commentaire,
       projet_id: id,
       nom: projet,
@@ -79,28 +95,17 @@ const Projet = () => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        return response.text(); // retrieve text instead of JSON
+        return response.text();
       })
       .then((data) => {
         try {
-          const json = JSON.parse(data); // attempt to parse the response as JSON
+          const json = JSON.parse(data);
           console.log(json);
         } catch (error) {
           console.error(error);
         }
       })
       .catch((error) => console.error(error));
-    fetch(`http://localhost:6969/api/commentaires/projet/${projetname}`, {
-      method: "GET",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        console.log("data comment", data[0].commentaire);
-        setActuCommentaires(data[0].commentaire);
-      })
-      .catch((error) => console.error(error));
-    // setLastSavedCommentaires(actucommentaires);
   };
 
   const handleSubmit = () => {
@@ -119,6 +124,8 @@ const Projet = () => {
       commentaire: commentaire,
     };
     console.log(dataToSend);
+
+    setSelectedNoteIndex(notesToSend);
   };
 
   return (
@@ -172,7 +179,7 @@ const Projet = () => {
         <textarea
           id="commentaire"
           name="commentaire"
-          value={actucommentaires}
+          value={actucommentaires.length > 0 ? actucommentaires : commentaire}
           onChange={handleCommentaireChange}
           className="projet-textarea"
         />
@@ -180,21 +187,6 @@ const Projet = () => {
           Soumettre
         </button>
       </div>
-      {/* <div>
-        {commentaire.map((commentaire) => (
-          <div key={commentaire.id} className="projet-commentaire">
-            <div className="projet-notes">
-              {JSON.parse(commentaire.notes).map((note) => (
-                <p key={note.critere}>
-                  {note.critere}: {note.note}
-                </p>
-              ))}
-            </div>
-            <p>{commentaire.commentaire}</p>
-          </div>
-        ))}
-      </div> */}
-      <div>{actucommentaires} </div>
     </div>
   );
 };

@@ -25,9 +25,7 @@ const Projets = () => {
             className="projet-box"
             onClick={() => handleBoxClick(projet)}
           >
-            {/* <div>{projet.id}</div> */}
             <div>{projet.nom}</div>
-            {/* <div>{projet.description}</div> */}
           </div>
         ))}
       </div>

@@ -37,7 +37,6 @@ db.serialize(() => {
       FOREIGN KEY (projet) REFERENCES projets (nom)
     )
   `);
-  // create some projects
   db.run(
     `INSERT INTO projets (nom, description) VALUES (?, ?)`,
     ["rtype", "Description du projet 1"],
@@ -79,35 +78,6 @@ app.get("/api/data", (_, res) => {
   res.send([(msg = "This is the test message")]);
 });
 
-// app.get("/projets", (_, res) => {
-//   fs.readFile("project.json", "utf8", (err, data) => {
-//     if (err) {
-//       console.error(err);
-//       res.status(500).send("Erreur interne du serveur");
-//       return;
-//     }
-
-//     const projets = JSON.parse(data);
-//     res.json(projets.projectNames);
-//   });
-// });
-
-// app.get("/projets", (_, res) => {
-//   db.all("SELECT * FROM projets", (err, rows) => {
-//     if (err) {
-//       res.status(500).send(err.message);
-//     } else {
-//       const projets = rows.map((row) => ({
-//         id: row.id,
-//         nom: row.nom,
-//         description: row.description,
-//       }));
-//       // make a array with all project names
-//       const projetsNames = projets.map((projet) => projet.nom);
-//       res.json(projetsNames);
-//     }
-//   });
-// });
 app.get("/projets", (_, res) => {
   db.all("SELECT id, nom, description FROM projets", (err, rows) => {
     if (err) {
@@ -151,7 +121,7 @@ app.get("/api/commentaires", (req, res) => {
       res.json(commentaires);
     }
   });
-}); 
+});
 
 
 app.post("/api/notes", (req, res) => {
@@ -195,20 +165,17 @@ app.get('/api/commentaires/projet/:nom', (req, res) => {
 
 
 app.post('/api/commentaire', (req, res) => {
-  // search the project by name in the database
   db.all("SELECT * FROM projets WHERE nom = ?", [req.body.projet], (err, rows) => {
     if (err) {
       return res.status(500).send(err.message);
     } else {
       const project = rows[0];
       console.log(project);
-      // with the project id, search the comments in the database
       db.all("SELECT * FROM commentaires WHERE projet_id = ?", [project.id], (err, rows) => {
         if (err) {
           return res.status(500).send(err.message);
         } else {
           if (rows.length === 0) {
-            // create a new comment
             db.run(
               `INSERT INTO commentaires (projet_id, projet, notes, commentaire) VALUES (?, ?, ?, ?)`,
               [project.id, project.nom, JSON.stringify(req.body.notes), req.body.commentaire],
@@ -222,7 +189,6 @@ app.post('/api/commentaire', (req, res) => {
               }
             );
           } else {
-            // if there is already a comment, update it (row[0])
             db.all("UPDATE commentaires SET notes = ?, commentaire = ? WHERE projet_id = ?", [JSON.stringify(req.body.notes), req.body.commentaire, project.id], (err, rows) => {
               if (err) {
                 return res.status(500).send(err.message);
