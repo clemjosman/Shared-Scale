@@ -11,8 +11,8 @@ const Projets = () => {
   }, []);
   const navigate = useNavigate();
   const handleBoxClick = (projet) => {
-    console.log(`La boîte ${projet} a été cliquée.`);
-    navigate(`/projets/${projet}`);
+    console.log(`Le projet ${projet.id} (${projet.nom}) a été cliqué.`);
+    navigate(`/projets/${projet.nom}`);
   };
 
   return (
@@ -25,7 +25,9 @@ const Projets = () => {
             className="projet-box"
             onClick={() => handleBoxClick(projet)}
           >
-            {projet}
+            {/* <div>{projet.id}</div> */}
+            <div>{projet.nom}</div>
+            {/* <div>{projet.description}</div> */}
           </div>
         ))}
       </div>

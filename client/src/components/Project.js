@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import "./Project.css";
-import io from "socket.io-client";
+// import io from "socket.io-client";
 
 const Projet = () => {
+  const [id, setId] = useState(null);
+  const [actucommentaires, setActuCommentaires] = useState([]);
   const { projet } = useParams();
   const projetname = projet.toLowerCase().replace(/\s+/g, "");
+  useEffect(() => {
+    fetch(`/projets/${projetname}`)
+      .then((response) => response.json())
+      .then((data) => setId(data.id))
+      .catch((error) => console.error(error));
+  }, [projetname]);
 
+  console.log("id", id);
   const grilleNotation = {
     rtype: [
       { critere: "Le cmake est fonctionnel", notes: [0, 1, 2] },
@@ -21,7 +30,6 @@ const Projet = () => {
       { critere: "pas d'inspi", notes: [0, 1] },
     ],
   };
-
   const grille = grilleNotation[projetname] || [];
 
   const [notes, setNotes] = useState(
@@ -33,7 +41,7 @@ const Projet = () => {
   const [commentaire, setCommentaire] = useState("");
   const [selectedNoteIndex, setSelectedNoteIndex] = useState(null);
   // connexion à l'instance de socket.io sur le serveur
-  //   const socket = io("http://localhost:6868");
+  //   const socket = io("http://localhost:6969");
 
   //   useEffect(() => {
   //     // écoute de l'événement commentaireAdded envoyé depuis le serveur
@@ -52,22 +60,48 @@ const Projet = () => {
 
   const handleCommentaireChange = (event) => {
     setCommentaire(event.target.value);
-    // émission de l'événement commentaireAdded au serveur
-    // socket.emit("commentaireAdded", event.target.value);
+    console.log("commentaire", event.target.value);
+    const body = {
+      projet: projetname,
+      notes: 0,
+      commentaire: commentaire,
+      projet_id: id,
+      nom: projet,
+    };
+    fetch("/api/commentaire", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.text(); // retrieve text instead of JSON
+      })
+      .then((data) => {
+        try {
+          const json = JSON.parse(data); // attempt to parse the response as JSON
+          console.log(json);
+        } catch (error) {
+          console.error(error);
+        }
+      })
+      .catch((error) => console.error(error));
+    fetch(`http://localhost:6969/api/commentaires/projet/${projetname}`, {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        console.log("data comment", data[0].commentaire);
+        setActuCommentaires(data[0].commentaire);
+      })
+      .catch((error) => console.error(error));
+    // setLastSavedCommentaires(actucommentaires);
   };
-  useEffect(() => {
-    // db.all(
-    //   `SELECT * FROM commentaires WHERE projet = ?`,
-    //   [projetname],
-    //   (err, rows) => {
-    //     if (err) {
-    //       console.error(err.message);
-    //     } else {
-    //       setCommentaires(rows);
-    //     }
-    //   }
-    // );
-  }, []);
 
   const handleSubmit = () => {
     const notesToSend = grille.flatMap((critere) => {
@@ -85,19 +119,6 @@ const Projet = () => {
       commentaire: commentaire,
     };
     console.log(dataToSend);
-    // db.serialize(() => {
-    //   db.run(
-    //     `INSERT INTO commentaires (projet, notes, commentaire) VALUES (?, ?, ?)`,
-    //     [projetname, JSON.stringify(notesToSend), commentaire],
-    //     (err) => {
-    //       if (err) {
-    //         console.error(err.message);
-    //       } else {
-    //         console.log("Commentaire inséré avec succès");
-    //       }
-    //     }
-    //   );
-    // });
   };
 
   return (
@@ -151,7 +172,7 @@ const Projet = () => {
         <textarea
           id="commentaire"
           name="commentaire"
-          value={commentaire}
+          value={actucommentaires}
           onChange={handleCommentaireChange}
           className="projet-textarea"
         />
@@ -173,6 +194,7 @@ const Projet = () => {
           </div>
         ))}
       </div> */}
+      <div>{actucommentaires} </div>
     </div>
   );
 };
